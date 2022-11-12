@@ -23,7 +23,7 @@ class Perceptron:
         self.test = test
         self.weights = weights
     
-    def batch_update_weights(self, lrate):
+    def incremental_update_weights(self, lrate):
         epoch_error = 0
         for i in range(self.train.shape[0]):
             row_x = self.train[[i],:-1]
@@ -32,8 +32,8 @@ class Perceptron:
             sign = np.dot(row_x, self.weights)
             sign = np.where(sign > 0, 1, -1)
             diff = np.subtract(row_y, sign)
-            delta_weights = np.multiply((lrate * diff), row_x)
-            delta_weights = np.transpose(delta_weights)
+            diff = diff * lrate
+            delta_weights = np.dot(np.transpose(row_x), diff)
             self.weights = self.weights + delta_weights
             if (row_y * sign) < 0:
                 epoch_error += 1
