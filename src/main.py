@@ -2,8 +2,9 @@ import numpy as np
 import csv
 import matplotlib.pyplot as plt
 
-TRAIN_DATA_PATH = 'data/train.csv'
-TEST_DATA_PATH = 'data/test.csv'
+TRAIN_DATA_PATH = '../data/train.csv'
+TEST_DATA_PATH = '../data/test.csv'
+FIGURES_PATH = '../figures/'
 NUM_TRAIN = 100
 NUM_TEST = 50
 RANGE = 1000
@@ -82,7 +83,7 @@ def plotError(err, type, eta):
         plt.xlim([0, 20])
         plt.title('Error during ' + type + ' training')
         plt.legend()
-    fig.savefig("figures/"+type+"/error_plot.png")
+    fig.savefig(FIGURES_PATH + type + "/error_plot.png")
     plt.clf()
 
 def plotDecSurf(epoch, weights, train, type):
@@ -107,7 +108,7 @@ def plotDecSurf(epoch, weights, train, type):
     plt.xlabel('x1')
     plt.ylabel('x2')
     plt.title('Decision Surface After Epoch = '+ str(epoch) + " ("+type+")")
-    fig.savefig("figures/"+type+"/dec_surf"+str(epoch)+".png")
+    fig.savefig(FIGURES_PATH + type+"/dec_surf"+str(epoch)+".png")
     plt.clf()
     
 
@@ -119,15 +120,15 @@ def main():
 
     weights = np.random.uniform(-10, 10, size=(3, 1))
 
-    eta = [0.0001, 0.001, 0.01, 0.1, 0.5]
+    eta_lst = [0.0001, 0.001, 0.01, 0.1, 0.5]
     
     err_inc = []
     err_batch = []
-    for i in range(len(eta)):
+    for eta in eta_lst:
         err = []
         percep_inc = Perceptron(train_data, test_data, weights)
         for epoch in range(EPOCHS):
-            err.append(percep_inc.incremental_update_weights(eta[i]))
+            err.append(percep_inc.incremental_update_weights(eta))
             if eta == 0.1:
                 if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
                     plotDecSurf(epoch, percep_inc.weights, percep_inc.train, "incremental")
@@ -137,15 +138,15 @@ def main():
         err = []
         percep_batch = Perceptron(train_data, test_data, weights)
         for epoch in range(EPOCHS):
-            err.append(percep_batch.batch_update_weights(eta[i]))
+            err.append(percep_batch.batch_update_weights(eta))
             if eta == 0.1:
                 if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
                     plotDecSurf(epoch, percep_batch.weights, percep_batch.train, "batch")
 
         err_batch.append(err)
 
-    plotError(err_inc, "incremental", eta)
-    plotError(err_batch, "batch", eta)
+    plotError(err_inc, "incremental", eta_lst)
+    plotError(err_batch, "batch", eta_lst)
 
     # Decaying learning rate
     err = []
