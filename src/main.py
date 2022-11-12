@@ -1,8 +1,8 @@
 import numpy as np
 import csv
 
-TRAIN_DATA_PATH = '../data/train.csv'
-TEST_DATA_PATH = '../data/test.csv'
+TRAIN_DATA_PATH = 'data/train.csv'
+TEST_DATA_PATH = 'data/test.csv'
 NUM_TRAIN = 100
 NUM_TEST = 50
 RANGE = 1000
@@ -10,7 +10,6 @@ EPOCHS = 100
 W0 = -2
 W1 = 1
 W2 = 3
->>>>>>> main
 X0 = 'x_0'
 X1 = 'x_1'
 X2 = 'x_2'
@@ -38,7 +37,6 @@ class Perceptron:
     def mse(self):
         prediction = np.dot(self.test[:,:-1], self.weights)
         diff = np.subtract(self.test[:,[-1]], prediction)
->>>>>>> main
         return np.sum(diff**2)
 
 
@@ -73,10 +71,7 @@ def main():
         percep.batch_update_weights(0.1)
         print(percep.mse())
     print(percep.weights)
->>>>>>> main
 
-
-                  
 
 if __name__ == "__main__":
     main()
