@@ -64,7 +64,7 @@ def main():
     train_data = np.genfromtxt(TRAIN_DATA_PATH, delimiter=',')
     test_data = np.genfromtxt(TEST_DATA_PATH, delimiter=',')
 
-    weights = np.random.uniform(-RANGE, RANGE, size=(3, 1))
+    weights = np.random.uniform(-10, 10, size=(3, 1))
 
     percep = Perceptron(train_data, test_data, weights)
     for epoch in range(EPOCHS):
