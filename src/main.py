@@ -23,6 +23,7 @@ class Perceptron:
         self.weights = weights
     
     def batch_update_weights(self, lrate):
+        epoch_error = 0
         for i in range(self.train.shape[0]):
             row_x = self.train[[i],:-1]
             row_y = self.train[i,-1]
@@ -33,6 +34,9 @@ class Perceptron:
             delta_weights = np.multiply((lrate * diff), row_x)
             delta_weights = np.transpose(delta_weights)
             self.weights = self.weights + delta_weights
+            if (row_y * sign) < 0:
+                epoch_error += 1
+        return (epoch_error/self.train.shape[0])
 
     def mse(self):
         prediction = np.dot(self.test[:,:-1], self.weights)
@@ -64,13 +68,15 @@ def main():
     train_data = np.genfromtxt(TRAIN_DATA_PATH, delimiter=',')
     test_data = np.genfromtxt(TEST_DATA_PATH, delimiter=',')
 
+    err = []
     weights = np.random.uniform(-10, 10, size=(3, 1))
 
     percep = Perceptron(train_data, test_data, weights)
     for epoch in range(EPOCHS):
-        percep.batch_update_weights(0.1)
-        print(percep.mse())
+        err.append(percep.batch_update_weights(0.1))
+        #print(percep.mse())
     print(percep.weights)
+    print(err)
 
 
 if __name__ == "__main__":
