@@ -80,14 +80,16 @@ def generate_data(num_examples):
         writer = csv.writer(f2)
         writer.writerows(data[NUM_TRAIN:])
 
-def plotError(err, type):
+def plotError(err, type, eta):
     fig = plt.figure()
-    plt.plot(range(EPOCHS), err)
-    plt.xlabel('Epoch')
-    plt.ylabel('Error')
-    # plt.xticks(range(NUM_SPLITS))
-    plt.title('Error during ' + type + ' training')
-    #plt.legend()
+    for i in range(len(err)):
+        print(err[i])
+        plt.plot(range(EPOCHS), err[i], label="eta = " +str(eta[i]), linestyle="--", dashes=(5, i))
+        plt.xlabel('Epoch')
+        plt.ylabel('Error')
+        plt.xlim([0, 20])
+        plt.title('Error during ' + type + ' training')
+        plt.legend()
     fig.savefig("figures/"+type+"/error_plot.png")
     plt.clf()
 
@@ -125,24 +127,33 @@ def main():
 
     weights = np.random.uniform(-10, 10, size=(3, 1))
 
+    eta = [0.0001, 0.001, 0.01, 0.1, 0.5]
+    
     err_inc = []
-    percep_inc = Perceptron(train_data, test_data, weights)
-    for epoch in range(EPOCHS):
-        err_inc.append(percep_inc.incremental_update_weights(0.1))
-        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
-            plotDecSurf(epoch, percep_inc.weights, percep_inc.train, "incremental")
-
-    plotError(err_inc, "incremental")
-
     err_batch = []
-    percep_batch = Perceptron(train_data, test_data, weights)
-    for epoch in range(EPOCHS):
-        err_batch.append(percep_batch.batch_update_weights(0.1))
-        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
-            plotDecSurf(epoch, percep_batch.weights, percep_batch.train, "batch")
+    for i in range(len(eta)):
+        err = []
+        percep_inc = Perceptron(train_data, test_data, weights)
+        for epoch in range(EPOCHS):
+            err.append(percep_inc.incremental_update_weights(eta[i]))
+            if eta == 0.1:
+                if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+                    plotDecSurf(epoch, percep_inc.weights, percep_inc.train, "incremental")
+        
+        err_inc.append(err)
+        
+        err = []
+        percep_batch = Perceptron(train_data, test_data, weights)
+        for epoch in range(EPOCHS):
+            err.append(percep_batch.batch_update_weights(eta[i]))
+            if eta == 0.1:
+                if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+                    plotDecSurf(epoch, percep_batch.weights, percep_batch.train, "batch")
 
+        err_batch.append(err)
 
-    plotError(err_batch, "batch")
+    plotError(err_inc, "incremental", eta)
+    plotError(err_batch, "batch", eta)
 
 
 if __name__ == "__main__":
