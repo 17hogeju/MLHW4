@@ -22,7 +22,7 @@ class Perceptron:
         self.test = test
         self.weights = weights
     
-    def batch_update_weights(self, lrate):
+    def incremental_update_weights(self, lrate):
         for i in range(self.train.shape[0]):
             row_x = self.train[[i],:-1]
             row_y = self.train[i,-1]
@@ -30,14 +30,26 @@ class Perceptron:
             sign = np.dot(row_x, self.weights)
             sign = np.where(sign > 0, 1, -1)
             diff = np.subtract(row_y, sign)
-            delta_weights = np.multiply((lrate * diff), row_x)
-            delta_weights = np.transpose(delta_weights)
+            diff = diff * lrate
+            delta_weights = np.dot(np.transpose(row_x), diff)
             self.weights = self.weights + delta_weights
 
-    def mse(self):
-        prediction = np.dot(self.test[:,:-1], self.weights)
-        diff = np.subtract(self.test[:,[-1]], prediction)
-        return np.sum(diff**2)
+
+    def batch_update_weights(self, lrate):
+        x = self.train[:,:-1]
+        y = self.train[:,[-1]]
+        sign = np.dot(x, self.weights)
+        sign = np.where(sign > 0, 1, -1)
+        diff = np.subtract(y, sign)
+        diff = diff * lrate
+        delta_weights = np.dot(np.transpose(x), diff)
+        self.weights = self.weights + delta_weights
+
+
+    # def mse(self):
+    #     prediction = np.dot(self.test[:,:-1], self.weights)
+    #     diff = np.subtract(self.test[:,[-1]], prediction)
+    #     return np.sum(diff**2)
 
 
 
@@ -67,9 +79,9 @@ def main():
     weights = np.random.uniform(-10, 10, size=(3, 1))
 
     percep = Perceptron(train_data, test_data, weights)
-    for epoch in range(EPOCHS):
-        percep.batch_update_weights(0.1)
-        print(percep.mse())
+    # for epoch in range(EPOCHS):
+    percep.incremental_update_weights(0.1)
+        # print(percep.mse())
     print(percep.weights)
 
 
