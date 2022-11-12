@@ -88,7 +88,7 @@ def plotError(err, type):
     # plt.xticks(range(NUM_SPLITS))
     plt.title('Error during ' + type + ' training')
     #plt.legend()
-    fig.savefig("figures/"+type+"/error_plot_" + type + ".png")
+    fig.savefig("figures/"+type+"/error_plot.png")
     plt.clf()
 
 def plotDecSurf(epoch, weights, train, type):
