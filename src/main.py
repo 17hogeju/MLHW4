@@ -111,7 +111,7 @@ def main():
 
     percep = Perceptron(train_data, test_data, weights)
     for epoch in range(EPOCHS):
-        err.append(percep.batch_update_weights(0.1))
+        err.append(percep.incremental_update_weights(0.1))
         if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
             plotDecSurf(epoch, percep.weights, percep.train)
         #print(percep.mse())
