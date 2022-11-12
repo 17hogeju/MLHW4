@@ -83,7 +83,6 @@ def generate_data(num_examples):
 def plotError(err, type, eta):
     fig = plt.figure()
     for i in range(len(err)):
-        print(err[i])
         plt.plot(range(EPOCHS), err[i], label="eta = " +str(eta[i]), linestyle="--", dashes=(5, i))
         plt.xlabel('Epoch')
         plt.ylabel('Error')
@@ -114,7 +113,7 @@ def plotDecSurf(epoch, weights, train, type):
     plt.ylim([x2_min, x2_max])
     plt.xlabel('x1')
     plt.ylabel('x2')
-    plt.title('Decision Surface After Epoch = '+ str(epoch) + "("+type+")")
+    plt.title('Decision Surface After Epoch = '+ str(epoch) + " ("+type+")")
     fig.savefig("figures/"+type+"/dec_surf"+str(epoch)+".png")
     plt.clf()
     
@@ -154,6 +153,29 @@ def main():
 
     plotError(err_inc, "incremental", eta)
     plotError(err_batch, "batch", eta)
+
+    # Decaying learning rate
+    err = []
+    eta_decay = 0.1
+    percep_decay_inc = Perceptron(train_data, test_data, weights)
+    for epoch in range(EPOCHS):
+        err.append(percep_decay_inc.incremental_update_weights(eta_decay))
+        eta_decay *= 0.8
+        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+            plotDecSurf(epoch, percep_decay_inc.weights, percep_decay_inc.train, "decay_inc")
+
+    plotError([err, err_inc[3]], "decay_inc", ["decay", "normal"])
+
+    err = []
+    eta_decay = 0.1
+    percep_decay_batch = Perceptron(train_data, test_data, weights)
+    for epoch in range(EPOCHS):
+        err.append(percep_decay_batch.incremental_update_weights(eta_decay))
+        eta_decay *= 0.8
+        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+            plotDecSurf(epoch, percep_decay_batch.weights, percep_decay_batch.train, "decay_batch")
+
+    plotError([err, err_batch[3]], "decay_batch", ["decay", "normal"])
 
 
 if __name__ == "__main__":
