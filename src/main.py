@@ -1,5 +1,6 @@
 import numpy as np
 import csv
+import matplotlib.pyplot as plt
 
 TRAIN_DATA_PATH = 'data/train.csv'
 TEST_DATA_PATH = 'data/test.csv'
@@ -62,6 +63,43 @@ def generate_data(num_examples):
         writer = csv.writer(f2)
         writer.writerows(data[NUM_TRAIN:])
 
+def plotError(err):
+    fig = plt.figure()
+    plt.plot(range(EPOCHS), err)
+    plt.xlabel('Epoch')
+    plt.ylabel('Error')
+    # plt.xticks(range(NUM_SPLITS))
+    plt.title('Error during training')
+    #plt.legend()
+    fig.savefig("figures/error_plot.png")
+    plt.clf()
+
+def plotDecSurf(epoch, weights, train):
+    pred = np.dot(train[:,:-1], weights)
+    pred = np.where(pred > 0, 1, -1)
+
+    pos = np.where(pred > 0)
+    neg = np.where(pred < 0)
+    x1_max = int(np.ceil(np.amax(train[:, 1])))
+    x1_min = int(np.ceil(np.amin(train[:, 1])))
+    x2_max = int(np.ceil(np.amax(train[:, 2])))
+    x2_min = int(np.ceil(np.amin(train[:, 2])))
+    
+    fig = plt.figure()
+    plt.scatter(train[pos, 1], train[pos, 2], c ="r")
+    plt.scatter(train[neg, 1], train[neg, 2], c ="b")
+    plt.plot([x1_min, x1_max], [(2-x1_min)/3, (2-x1_max)/3],c="k")
+    plt.axvline(x=0, c="lightgray", linestyle="dashed", label="x=0")
+    plt.axhline(y=0, c="lightgray", linestyle="dashed", label="y=0")
+    plt.xlim([x1_min, x1_max])
+    plt.ylim([x2_min, x2_max])
+    plt.xlabel('x1')
+    plt.ylabel('x2')
+    plt.title('Decision Surface After Epoch = '+ str(epoch))
+    fig.savefig("figures/dec_surf"+str(epoch)+".png")
+    plt.clf()
+    
+
 def main():
     print("Assignment 3: Naive Bayes")
     generate_data(NUM_TRAIN+NUM_TEST)
@@ -74,9 +112,13 @@ def main():
     percep = Perceptron(train_data, test_data, weights)
     for epoch in range(EPOCHS):
         err.append(percep.batch_update_weights(0.1))
+        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+            plotDecSurf(epoch, percep.weights, percep.train)
         #print(percep.mse())
     print(percep.weights)
     print(err)
+    plotError(err)
+
 
 
 if __name__ == "__main__":
