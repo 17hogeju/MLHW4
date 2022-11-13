@@ -77,14 +77,14 @@ def generate_data(num_examples):
 def plotError(err, type, eta):
     fig = plt.figure()
     for i in range(len(err)):
-        plt.plot(range(EPOCHS), err[i], label="eta = " +str(eta[i]), linestyle="--", dashes=(5, i))
+        plt.plot(range(EPOCHS), err[i], label=f'eta = {eta[i]}', linestyle="--", dashes=(5, i))
         plt.xlabel('Epoch')
         plt.ylabel('Error')
         plt.xlim([0, 20])
         plt.title('Error during ' + type + ' training')
         plt.legend()
     fig.savefig(FIGURES_PATH + type + "/error_plot.png")
-    plt.clf()
+    plt.close()
 
 def plotDecSurf(epoch, weights, train, type):
     pred = np.dot(train[:,:-1], weights)
@@ -110,8 +110,16 @@ def plotDecSurf(epoch, weights, train, type):
     plt.legend(loc='upper right')
     plt.title('Decision Surface After Epoch = '+ str(epoch) + " ("+type+")")
     fig.savefig(FIGURES_PATH + type+"/dec_surf"+str(epoch)+".png")
-    plt.clf()
-    
+    plt.close()
+
+def plotAdaptError(err, name):
+    fig = plt.figure()
+    plt.plot(range(EPOCHS), err, linestyle="--")
+    plt.xlabel('Epoch')
+    plt.ylabel('Error')
+    plt.title('Error using adaptive learning rate')
+    fig.savefig(f'{FIGURES_PATH}{name}/error_plot.png')
+    plt.close()
 
 def main():
     print("Assignment 3: Naive Bayes")
@@ -178,6 +186,57 @@ def main():
         if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
             plotDecSurf(epoch, percep_decay_batch.weights, percep_decay_batch.train, "decay_batch")
     plotError([err, err_batch[3]], "decay_batch", ["decay", "normal"])
+
+    # Adaptive rate for incremental
+    err = []
+    learning_rates = []
+    learning_rate = 0.3
+    THRESHOLD = 0.03
+    DECREASE = 0.9
+    INCREASE = 1.02
+    percep_adapt_inc = Perceptron(train_data, test_data, weights)
+    percep_adapt_inc.incremental_update_weights(learning_rate)
+    prev_err = percep_adapt_inc.calculate_error()
+    for epoch in range(EPOCHS):
+        weights_before = percep_adapt_inc.weights
+        percep_adapt_inc.incremental_update_weights(learning_rate)
+        curr_err = percep_adapt_inc.calculate_error()
+        learning_rates.append(learning_rate)
+        err.append(curr_err)
+        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+            plotDecSurf(epoch, percep_adapt_inc.weights, percep_adapt_inc.train, "adapt_inc")
+        if curr_err < prev_err:
+            learning_rate *= INCREASE
+        elif prev_err - curr_err > THRESHOLD:
+            learning_rate *= DECREASE
+            percep_adapt_inc.weights = weights_before
+
+        prev_err = curr_err    
+    plotAdaptError(err, "adapt_inc")
+
+    # Adaptive rate for batch
+    err = []
+    learning_rates = []
+    learning_rate = 0.3
+    percep_adapt_batch = Perceptron(train_data, test_data, weights)
+    percep_adapt_batch.batch_update_weights(learning_rate)
+    prev_err = percep_adapt_batch.calculate_error()
+    for epoch in range(EPOCHS):
+        weights_before = percep_adapt_batch.weights
+        percep_adapt_batch.batch_update_weights(learning_rate)
+        curr_err = percep_adapt_batch.calculate_error()
+        learning_rates.append(learning_rate)
+        err.append(curr_err)
+        if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
+            plotDecSurf(epoch, percep_adapt_batch.weights, percep_adapt_batch.train, "adapt_batch")
+        if curr_err < prev_err:
+            learning_rate *= INCREASE
+        elif prev_err - curr_err > THRESHOLD:
+            learning_rate *= DECREASE
+            percep_adapt_inc.weights = weights_before
+
+        prev_err = curr_err    
+    plotAdaptError(err, "adapt_batch")
 
 
 if __name__ == "__main__":
