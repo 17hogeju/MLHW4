@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 TRAIN_DATA_PATH = '../data/train.csv'
 TEST_DATA_PATH = '../data/test.csv'
 FIGURES_PATH = '../figures/'
-NUM_TRAIN = 100
+NUM_TRAIN = 200
 NUM_TEST = 50
 RANGE = 1000
 EPOCHS = 100
