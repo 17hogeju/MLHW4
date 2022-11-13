@@ -212,7 +212,7 @@ def main():
             percep_adapt_inc.weights = weights_before
 
         prev_err = curr_err    
-    plotAdaptError(err, "adapt_inc")
+    plotError([err, err_inc[3]], "adapt_inc", ["adapt", "normal"])
 
     # Adaptive rate for batch
     err = []
@@ -236,7 +236,7 @@ def main():
             percep_adapt_inc.weights = weights_before
 
         prev_err = curr_err    
-    plotAdaptError(err, "adapt_batch")
+    plotError([err, err_batch[3]], "adapt_batch", ["adapt", "normal"])
 
 
 if __name__ == "__main__":
