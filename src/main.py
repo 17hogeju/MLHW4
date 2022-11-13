@@ -81,7 +81,7 @@ def generate_data(num_examples):
 def plotError(err, type, eta):
     fig = plt.figure()
     for i in range(len(err)):
-        plt.plot(range(EPOCHS), err[i], label=f'eta = {eta[i]}', linestyle="--", dashes=(5, i))
+        plt.plot(range(EPOCHS+1), err[i], label=f'eta = {eta[i]}', linestyle="--", dashes=(5, i))
         plt.xlabel('Epoch')
         plt.ylabel('Error')
         plt.xlim([0, 20])
@@ -112,8 +112,8 @@ def plotDecSurf(epoch, weights, train, type):
     plt.xlabel('x1')
     plt.ylabel('x2')
     plt.legend(loc='upper right')
-    plt.title('Decision Surface After Epoch = '+ str(epoch) + " ("+type+")")
-    fig.savefig(FIGURES_PATH + type+"/dec_surf"+str(epoch)+".png")
+    plt.title('Decision Surface After Epoch = '+ str(epoch+1) + " ("+type+")")
+    fig.savefig(FIGURES_PATH + type+"/dec_surf"+str(epoch+1)+".png")
     plt.close()
 
 def plotAdaptError(err, name):
@@ -144,6 +144,8 @@ def main():
         # Delta training for incremental
         err = []
         percep_inc = Perceptron(train_data, test_data, weights)
+        err.append(percep_inc.calculate_error())
+        plotDecSurf(-1, percep_inc.weights, percep_inc.train, "incremental")
         start_ie = time.time()
         for epoch in range(EPOCHS):
             percep_inc.incremental_update_weights(eta)
@@ -159,8 +161,10 @@ def main():
         
         # Delta training for batch
         err = []
-        start_be = time.time()
         percep_batch = Perceptron(train_data, test_data, weights)
+        err.append(percep_batch.calculate_error())
+        plotDecSurf(-1, percep_batch.weights, percep_batch.train, "batch")
+        start_be = time.time()
         for epoch in range(EPOCHS):
             percep_batch.batch_update_weights(eta)
             err.append(percep_batch.calculate_error())
@@ -181,6 +185,8 @@ def main():
     err = []
     eta_decay = 0.1
     percep_decay_inc = Perceptron(train_data, test_data, weights)
+    err.append(percep_decay_inc.calculate_error())
+    plotDecSurf(-1, percep_decay_inc.weights, percep_decay_inc.train, "decay_inc")
     start_di = time.time()
     for epoch in range(EPOCHS):
         percep_decay_inc.incremental_update_weights(eta_decay)
@@ -198,6 +204,8 @@ def main():
     err = []
     eta_decay = 0.1
     percep_decay_batch = Perceptron(train_data, test_data, weights)
+    err.append(percep_decay_batch.calculate_error())
+    plotDecSurf(-1, percep_decay_batch.weights, percep_decay_batch.train, "decay_batch")
     start_db = time.time()
     for epoch in range(EPOCHS):
         percep_decay_batch.incremental_update_weights(eta_decay)
@@ -221,6 +229,8 @@ def main():
     percep_adapt_inc = Perceptron(train_data, test_data, weights)
     percep_adapt_inc.incremental_update_weights(learning_rate)
     prev_err = percep_adapt_inc.calculate_error()
+    err.append(prev_err)
+    plotDecSurf(-1, percep_adapt_inc.weights, percep_adapt_inc.train, "adapt_inc")
     start_ai = time.time()
     for epoch in range(EPOCHS):
         weights_before = percep_adapt_inc.weights
@@ -250,6 +260,8 @@ def main():
     percep_adapt_batch = Perceptron(train_data, test_data, weights)
     percep_adapt_batch.batch_update_weights(learning_rate)
     prev_err = percep_adapt_batch.calculate_error()
+    err.append(prev_err)
+    plotDecSurf(-1, percep_adapt_batch.weights, percep_adapt_batch.train, "adapt_batch")
     start_ab = time.time()
     for epoch in range(EPOCHS):
         weights_before = percep_adapt_batch.weights
