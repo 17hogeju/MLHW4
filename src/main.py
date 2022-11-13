@@ -1,5 +1,6 @@
 import numpy as np
 import csv
+import time
 import matplotlib.pyplot as plt
 
 TRAIN_DATA_PATH = '../data/train.csv'
@@ -23,6 +24,7 @@ class Perceptron:
         self.train = train
         self.test = test
         self.weights = weights
+        self.weight_updates = 0
     
     def calculate_error(self):
         wrong = 0
@@ -46,6 +48,7 @@ class Perceptron:
             diff = diff * lrate
             delta_weights = np.dot(np.transpose(row_x), diff)
             self.weights = self.weights + delta_weights
+            self.weight_updates += 1
 
     def batch_update_weights(self, lrate):
         x = self.train[:,:-1]
@@ -56,6 +59,7 @@ class Perceptron:
         diff = diff * lrate
         delta_weights = np.dot(np.transpose(x), diff)
         self.weights = self.weights + delta_weights
+        self.weight_updates += 1
 
 def generate_data(num_examples):
     print(f'Generating data in {TRAIN_DATA_PATH} and {TEST_DATA_PATH}')
@@ -140,16 +144,22 @@ def main():
         # Delta training for incremental
         err = []
         percep_inc = Perceptron(train_data, test_data, weights)
+        start_ie = time.time()
         for epoch in range(EPOCHS):
             percep_inc.incremental_update_weights(eta)
             err.append(percep_inc.calculate_error())
             if eta == 0.1:
                 if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
                     plotDecSurf(epoch, percep_inc.weights, percep_inc.train, "incremental")
+        end_ie = time.time()
         err_inc.append(err)
+        print(f'Incremental for eta: {eta}')
+        print(f'Total execution time: {end_ie - start_ie} ms')
+        print(f'Number of weight updates: {percep_inc.weight_updates}')
         
         # Delta training for batch
         err = []
+        start_be = time.time()
         percep_batch = Perceptron(train_data, test_data, weights)
         for epoch in range(EPOCHS):
             percep_batch.batch_update_weights(eta)
@@ -157,8 +167,12 @@ def main():
             if eta == 0.1:
                 if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
                     plotDecSurf(epoch, percep_batch.weights, percep_batch.train, "batch")
-
+        end_be = time.time()
         err_batch.append(err)
+        print(f'Batch for eta: {eta}')
+        print(f'Total execution time: {end_be - start_be} ms')
+        print(f'Number of weight updates: {percep_batch.weight_updates}')
+
     plotError(err_inc, "incremental", eta_lst)
     plotError(err_batch, "batch", eta_lst)
 
@@ -167,25 +181,35 @@ def main():
     err = []
     eta_decay = 0.1
     percep_decay_inc = Perceptron(train_data, test_data, weights)
+    start_di = time.time()
     for epoch in range(EPOCHS):
         percep_decay_inc.incremental_update_weights(eta_decay)
         err.append(percep_decay_inc.calculate_error())
         eta_decay *= 0.8
         if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
             plotDecSurf(epoch, percep_decay_inc.weights, percep_decay_inc.train, "decay_inc")
+    end_di = time.time()
     plotError([err, err_inc[3]], "decay_inc", ["decay", "normal"])
+    print('Decaying Rate for Incremental')
+    print(f'Total execution time: {end_di - start_di} ms')
+    print(f'Number of weight updates: {percep_decay_inc.weight_updates}')
     
     # Decaying learning rate for batch
     err = []
     eta_decay = 0.1
     percep_decay_batch = Perceptron(train_data, test_data, weights)
+    start_db = time.time()
     for epoch in range(EPOCHS):
         percep_decay_batch.incremental_update_weights(eta_decay)
         err.append(percep_decay_batch.calculate_error())
         eta_decay *= 0.8
         if (epoch == 4 or epoch == 9 or epoch == 49 or epoch == 99):
             plotDecSurf(epoch, percep_decay_batch.weights, percep_decay_batch.train, "decay_batch")
+    end_db = time.time()
     plotError([err, err_batch[3]], "decay_batch", ["decay", "normal"])
+    print('Decaying Rate for Batch')
+    print(f'Total execution time: {end_db - start_db} ms')
+    print(f'Number of weight updates: {percep_decay_batch.weight_updates}')
 
     # Adaptive rate for incremental
     err = []
@@ -197,6 +221,7 @@ def main():
     percep_adapt_inc = Perceptron(train_data, test_data, weights)
     percep_adapt_inc.incremental_update_weights(learning_rate)
     prev_err = percep_adapt_inc.calculate_error()
+    start_ai = time.time()
     for epoch in range(EPOCHS):
         weights_before = percep_adapt_inc.weights
         percep_adapt_inc.incremental_update_weights(learning_rate)
@@ -211,8 +236,12 @@ def main():
             learning_rate *= DECREASE
             percep_adapt_inc.weights = weights_before
 
-        prev_err = curr_err    
+        prev_err = curr_err
+    end_ai = time.time()
     plotError([err, err_inc[3]], "adapt_inc", ["adapt", "normal"])
+    print('Adaptive Rate for Incremental')
+    print(f'Total execution time: {end_ai - start_ai} ms')
+    print(f'Number of weight updates: {percep_adapt_inc.weight_updates}')
 
     # Adaptive rate for batch
     err = []
@@ -221,6 +250,7 @@ def main():
     percep_adapt_batch = Perceptron(train_data, test_data, weights)
     percep_adapt_batch.batch_update_weights(learning_rate)
     prev_err = percep_adapt_batch.calculate_error()
+    start_ab = time.time()
     for epoch in range(EPOCHS):
         weights_before = percep_adapt_batch.weights
         percep_adapt_batch.batch_update_weights(learning_rate)
@@ -235,8 +265,12 @@ def main():
             learning_rate *= DECREASE
             percep_adapt_inc.weights = weights_before
 
-        prev_err = curr_err    
+        prev_err = curr_err
+    end_ab = time.time()
     plotError([err, err_batch[3]], "adapt_batch", ["adapt", "normal"])
+    print('Adaptive Rate for Batch')
+    print(f'Total execution time: {end_ab - start_ab} ms')
+    print(f'Number of weight updates: {percep_adapt_batch.weight_updates}')
 
 
 if __name__ == "__main__":
